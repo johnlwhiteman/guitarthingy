@@ -3,11 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <title>GuitarThingy</title>
+    <link rel="stylesheet" type="text/css" href="css/guitarthingy.css">
 </head>
 <body>
 <h1>GuitarThingy</h1>
+<canvas id="guitarThingy"></canvas>
+<br/><br/>
+<table>
+<tr>
+<td>Strings:</td><td><input type="text" id="stringCnt" value="6" autofocus></td>
+</tr><tr>
+<td>Frets:</td><td><input type="text" id="fretCnt" value="22"></td>
+<tr><tr>
+<td colspan="2" align="right"><button type="button" id="build">Set</button></td>
+</tr>
+</table>
+<script src="js/jquery-3.2.1.min.js"></script>
 <script src="js/guitarthingy.js"></script>
+<script>
+
+class GuitarCanvas extends Guitar {
+    constructor(stringCnt, fretCnt) {
+        super(stringCnt, fretCnt);
+        this.fretCntPlus = this.fretCnt + 1;
+        this.canvasId = null;
+        this.canvas = null;
+        this.context = null;
+    }
+
+    clearCanvas() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    draw(canvasId, stringSpacing, stringWidth, fretSpacing, fretWidth) {
+        this.canvasId = canvasId;
+        this.stringSpacing = stringSpacing;
+        this.stringWidth = stringWidth;
+        this.fretSpacing = fretSpacing;
+        this.fretWidth = fretWidth;
+        this.fretTop = this.stringSpacing;
+        this.stringLeft = 50;
+        this.stringRight = this.stringSpacing + ((this.fretCntPlus - 1) * this.fretSpacing);
+        this.stringOffset = 0;
+        this.stringOffsetAdj = 0;
+        this.fretOffset = 0;
+        this.canvas = document.getElementById(this.canvasId);
+        this.context = this.canvas.getContext('2d');
+        this.canvas.height = (this.stringSpacing * this.stringCnt) + this.stringSpacing
+        this.canvas.width = (this.fretSpacing * this.fretCntPlus) + this.fretSpacing;
+
+        this.clearCanvas();
+
+        for (var stringNum = 1; stringNum <= this.stringCnt; stringNum++) {
+            this.stringOffset = this.stringSpacing * stringNum;
+            this.stringWidthAdj = this.stringWidth * stringNum * .5;
+            this.drawLine(this.stringWidthAdj, this.stringLeft,
+                          this.stringRight, this.stringOffset, this.stringOffset);
+        }
+
+        for (var fretNum = 0; fretNum < this.fretCntPlus; fretNum++) {
+            console.log(fretNum + " -> " + this.fretCntPlus);
+            this.fretOffset = this.stringLeft + (this.fretSpacing * fretNum);
+            this.drawLine(this.fretWidth, this.fretOffset,
+                          this.fretOffset, this.fretTop, this.stringOffset);
+        }
+
+    }
+
+    drawFretInlayCircle() {
+        this.context.lineWidth = 2;
+        this.context.beginPath();
+        this.context.arc(150, 150, 10, 0, Math.PI * 2, false);
+        this.context.strokeStyle = "#FF0000";
+        this.context.stroke();
+        this.context.closePath();
+    }
+
+    drawLine(lineWidth, x1, x2, y1, y2) {
+        this.context.lineWidth = lineWidth;
+        this.context.beginPath();
+        this.context.moveTo(x1, y1);
+        this.context.lineTo(x2, y2);
+        this.context.stroke();
+        this.context.closePath();
+    }
+}
+
+$("#build").click(function() {
+    try {
+        var stringCnt = parseInt($("#stringCnt").val());
+        var fretCnt = parseInt($("#fretCnt").val());
+        let guitar = new GuitarCanvas(stringCnt, fretCnt);
+        guitar.tune(["E", "B", "G", "D", "A", "E"]);
+        //guitar.showStrings();
+        guitar.draw("guitarThingy", 50, 1, 35, 2);
+    } catch(err) {
+        // put error message here
+    }
+})
+</script>
 </body>
 </html>
-
-
